@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Hexagon, User } from 'lucide-react';
+import { Menu, X, Hexagon, User, LogOut, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { currentUser, logout, userRole } = useAuth();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -46,13 +49,42 @@ const Navbar = () => {
 
                     {/* Desktop Auth */}
                     <div className="hidden md:flex items-center gap-4">
-                        <Link to="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
-                            Kirish
-                        </Link>
-                        <Link to="/register" className="btn-primary py-2 px-5 text-sm flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            Boshlash
-                        </Link>
+                        {currentUser ? (
+                            <div className="flex items-center gap-6">
+                                {userRole === 'admin' && (
+                                    <Link to="/admin" className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1.5 text-sm font-medium">
+                                        <ShieldCheck className="w-4 h-4" />
+                                        Admin Panel
+                                    </Link>
+                                )}
+                                <div className="flex items-center gap-3">
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-400">Xush kelibsiz,</p>
+                                        <p className="text-sm font-semibold text-white">{currentUser.displayName || 'Foydalanuvchi'}</p>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            await logout();
+                                            toast.success("Tizimdan chiqdingiz");
+                                        }}
+                                        className="p-2 rounded-xl bg-white/5 hover:bg-red-500/10 hover:text-red-400 transition-all text-gray-400"
+                                        title="Chiqish"
+                                    >
+                                        <LogOut className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <Link to="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                                    Kirish
+                                </Link>
+                                <Link to="/register" className="btn-primary py-2 px-5 text-sm flex items-center gap-2">
+                                    <User className="w-4 h-4" />
+                                    Boshlash
+                                </Link>
+                            </>
+                        )}
                     </div>
 
                     {/* Mobile menu button */}
@@ -82,8 +114,32 @@ const Navbar = () => {
                             </Link>
                         ))}
                         <div className="pt-4 flex flex-col gap-3 border-t border-white/10">
-                            <Link to="/login" className="w-full text-center py-3 rounded-xl glass text-white font-medium">Kirish</Link>
-                            <Link to="/register" className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-medium">Ro'yxatdan o'tish</Link>
+                            {currentUser ? (
+                                <>
+                                    <div className="flex items-center justify-between px-4 py-2 bg-white/5 rounded-xl">
+                                        <span className="text-sm text-gray-400">{currentUser.displayName || 'Foydalanuvchi'}</span>
+                                        {userRole === 'admin' && <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full">Admin</span>}
+                                    </div>
+                                    {userRole === 'admin' && (
+                                        <Link to="/admin" className="w-full text-center py-3 rounded-xl glass text-amber-400 font-medium" onClick={() => setMobileMenuOpen(false)}>Admin Panel</Link>
+                                    )}
+                                    <button
+                                        onClick={async () => {
+                                            await logout();
+                                            setMobileMenuOpen(false);
+                                            toast.success("Tizimdan chiqdingiz");
+                                        }}
+                                        className="w-full text-center py-3 rounded-xl bg-red-500/10 text-red-400 font-medium"
+                                    >
+                                        Chiqishdan
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link to="/login" className="w-full text-center py-3 rounded-xl glass text-white font-medium" onClick={() => setMobileMenuOpen(false)}>Kirish</Link>
+                                    <Link to="/register" className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-medium" onClick={() => setMobileMenuOpen(false)}>Ro'yxatdan o'tish</Link>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

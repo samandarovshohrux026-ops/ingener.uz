@@ -1,9 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Hexagon, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Mail, Lock, Hexagon, ArrowRight, Loader } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Login = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { login } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!email || !password) {
+            toast.error("Barcha maydonlarni to'ldiring!");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await login(email, password);
+            toast.success("Muvaffaqiyatli kirdingiz!");
+            navigate('/generator');
+        } catch (error) {
+            console.error(error);
+            toast.error("Email yoki parol noto'g'ri kiritildi.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
     return (
         <div className="min-h-screen pt-24 pb-16 flex items-center justify-center relative overflow-hidden">
             <div className="absolute top-1/4 left-1/4 w-[30%] h-[30%] bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
@@ -26,7 +53,7 @@ const Login = () => {
                         </p>
                     </div>
 
-                    <form className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-300 mb-1">Email manzili</label>
                             <div className="relative">
@@ -35,8 +62,11 @@ const Login = () => {
                                 </div>
                                 <input
                                     type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 bg-surface border border-white/10 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 text-white transition-all outline-none"
                                     placeholder="nom@mail.com"
+                                    required
                                 />
                             </div>
                         </div>
@@ -52,14 +82,28 @@ const Login = () => {
                                 </div>
                                 <input
                                     type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 bg-surface border border-white/10 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 text-white transition-all outline-none"
                                     placeholder="••••••••"
+                                    required
                                 />
                             </div>
                         </div>
 
-                        <button type="button" className="w-full btn-primary flex justify-center py-3 mt-6">
-                            Tizimga Kirish
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`w-full btn-primary flex justify-center items-center gap-2 py-3 mt-6 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                            {isSubmitting ? (
+                                <Loader className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <>
+                                    Tizimga Kirish
+                                    <ArrowRight className="w-5 h-5 ml-1" />
+                                </>
+                            )}
                         </button>
                     </form>
 

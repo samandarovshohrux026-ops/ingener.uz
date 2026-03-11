@@ -1,9 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, Hexagon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Mail, Lock, User, Hexagon, Loader } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Register = () => {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { register } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!name || !email || !password) {
+            toast.error("Barcha maydonlarni to'ldiring!");
+            return;
+        }
+        if (password.length < 6) {
+            toast.error("Parol kamida 6 ta belgidan iborat bo'lishi kerak.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await register(email, password, name);
+            toast.success("Hisob muvaffaqiyatli yaratildi!");
+            navigate('/generator');
+        } catch (error) {
+            console.error(error);
+            if (error.code === 'auth/email-already-in-use') {
+                toast.error("Bu email bilan ro'yxatdan o'tilgan.");
+            } else {
+                toast.error("Ro'yxatdan o'tishda xatolik yuz berdi.");
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
     return (
         <div className="min-h-screen pt-24 pb-16 flex items-center justify-center relative overflow-hidden">
             <div className="absolute top-1/2 left-1/4 w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] pointer-events-none -translate-y-1/2" />
@@ -23,7 +59,7 @@ const Register = () => {
                         </p>
                     </div>
 
-                    <form className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-300 mb-1">To'liq ismingiz</label>
                             <div className="relative">
@@ -32,8 +68,11 @@ const Register = () => {
                                 </div>
                                 <input
                                     type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 bg-surface border border-white/10 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 text-white transition-all outline-none"
                                     placeholder="Masalan: Alisher Navoiy"
+                                    required
                                 />
                             </div>
                         </div>
@@ -46,8 +85,11 @@ const Register = () => {
                                 </div>
                                 <input
                                     type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 bg-surface border border-white/10 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 text-white transition-all outline-none"
                                     placeholder="nom@mail.com"
+                                    required
                                 />
                             </div>
                         </div>
@@ -60,14 +102,21 @@ const Register = () => {
                                 </div>
                                 <input
                                     type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 bg-surface border border-white/10 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 text-white transition-all outline-none"
                                     placeholder="••••••••"
+                                    required
                                 />
                             </div>
                         </div>
 
-                        <button type="button" className="w-full btn-primary flex justify-center py-3 mt-6 text-lg font-semibold">
-                            Ro'yxatdan O'tish
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`w-full btn-primary flex justify-center py-3 mt-6 text-lg font-semibold ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                            {isSubmitting ? <Loader className="w-6 h-6 animate-spin" /> : "Ro'yxatdan O'tish"}
                         </button>
                     </form>
 
