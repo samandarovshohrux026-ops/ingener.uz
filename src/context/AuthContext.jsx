@@ -50,23 +50,30 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setCurrentUser(user);
+        if (!auth) {
+            console.error("Auth is not initialized! Check firebase.js logs.");
+            setLoading(false);
+            return;
+        }
 
-            if (user) {
-                // Rolni bazadan o'qish
-                try {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            try {
+                setCurrentUser(user);
+                if (user) {
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists()) {
                         setUserRole(userDoc.data().role || 'user');
                     }
-                } catch (error) {
-                    console.error("Error fetching user role:", error);
+                } else {
+                    setUserRole('user');
                 }
-            } else {
-                setUserRole('user');
+            } catch (error) {
+                console.error("Auth observer error:", error);
+            } finally {
+                setLoading(false);
             }
-
+        }, (error) => {
+            console.error("Firebase auth error:", error);
             setLoading(false);
         });
 
@@ -83,7 +90,16 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {loading ? (
+                <div className="min-h-screen bg-background flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                        <p className="text-gray-400 animate-pulse">Yuklanmoqda...</p>
+                    </div>
+                </div>
+            ) : (
+                children
+            )}
         </AuthContext.Provider>
     );
 };

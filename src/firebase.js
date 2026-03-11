@@ -12,6 +12,21 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+console.log("Firebase initializing with Project ID:", firebaseConfig.projectId);
+
+if (!firebaseConfig.apiKey) {
+    console.error("CRITICAL: Firebase API Key is missing! Check .env.local file.");
+}
+
+export let app;
+export let auth;
+export let db;
+
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    console.log("Firebase initialized successfully!");
+} catch (error) {
+    console.error("Firebase initialization failed:", error);
+}
