@@ -36,13 +36,13 @@ const Landing = () => {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 mt-4">
-                            <button className="btn-primary flex items-center justify-center gap-2 text-lg">
+                            <Link to="/generator" className="btn-primary flex items-center justify-center gap-2 text-lg">
                                 Generatsiya Qilish
                                 <ArrowRight className="w-5 h-5" />
-                            </button>
-                            <button className="btn-secondary flex items-center justify-center gap-2 text-lg">
+                            </Link>
+                            <Link to="/portfolio" className="btn-secondary flex items-center justify-center gap-2 text-lg">
                                 Loyihalarni Ko'rish
-                            </button>
+                            </Link>
                         </div>
 
                         <div className="mt-8 pt-8 border-t border-white/10 flex items-center gap-8">

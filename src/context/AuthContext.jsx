@@ -18,13 +18,17 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (email, password, name) => {
         try {
+            console.log("Registering user with email:", email);
             // 1. Auth da foydalanuvchi yaratish
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            console.log("User created in Firebase Auth:", userCredential.user.uid);
 
             // 2. Ismini qo'shish
             await updateProfile(userCredential.user, { displayName: name });
+            console.log("User profile updated with name:", name);
 
             // 3. Firestore bazasiga saqlash (qoshimcha ma'lumotlar bilan)
+            console.log("Saving user data to Firestore...");
             await setDoc(doc(db, "users", userCredential.user.uid), {
                 uid: userCredential.user.uid,
                 email: email,
@@ -34,9 +38,11 @@ export const AuthProvider = ({ children }) => {
                 subscription: "Oddiy",
                 aiGenerationsLeft: 5
             });
+            console.log("User data saved to Firestore successfully.");
 
             return userCredential.user;
         } catch (error) {
+            console.error("AuthContext Register Error:", error);
             throw error;
         }
     };

@@ -30,11 +30,21 @@ const Register = () => {
             toast.success("Hisob muvaffaqiyatli yaratildi!");
             navigate('/generator');
         } catch (error) {
-            console.error(error);
+            console.error("Registration submit error:", error);
+
+            // Firebase xatoliklarini aniqroq ko'rsatish
             if (error.code === 'auth/email-already-in-use') {
-                toast.error("Bu email bilan ro'yxatdan o'tilgan.");
+                toast.error("Bu email bilan allaqachon ro'yxatdan o'tilgan.");
+            } else if (error.code === 'auth/invalid-email') {
+                toast.error("Email manzili noto'g'ri kiritilgan.");
+            } else if (error.code === 'auth/weak-password') {
+                toast.error("Parol juda kuchsiz. Kamida 6 ta belgi kiriting.");
+            } else if (error.code === 'auth/operation-not-allowed') {
+                toast.error("Email/Parol orqali ro'yxatdan o'tish o'chirilgan. Admin bilan bog'laning.");
+            } else if (error.code === 'permission-denied') {
+                toast.error("Bazaga yozishda xatolik (Permission Denied).");
             } else {
-                toast.error("Ro'yxatdan o'tishda xatolik yuz berdi.");
+                toast.error(`Xatolik: ${error.message || "Ro'yxatdan o'tishda muammo yuz berdi"}`);
             }
         } finally {
             setIsSubmitting(false);
